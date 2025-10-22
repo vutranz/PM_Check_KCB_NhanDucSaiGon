@@ -12,9 +12,11 @@ public class ErrorKCBDetail {
     private String maDichVu;
     private String maBsCĐ;
     private String maBsTH;
+    private String tenDichVu;
     private String ngayYL;
     private String ngayTHYL;
     private String Ngaykq;
+    private String hoten;
     private String errorDetail;
 
 }
