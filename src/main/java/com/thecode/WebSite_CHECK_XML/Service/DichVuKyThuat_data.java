@@ -144,4 +144,10 @@ public class DichVuKyThuat_data {
             new DichVuKyThuat("10.19", "Khám Ngoại tổng hợp", 2, 3, "CDHA")
         );
     }
+
+    public static List<DichVuKyThuat> ddDat(){
+    return Arrays.asList(
+            new DichVuKyThuat("10.19", "Khám Ngoại tổng hợp", 2, 3, "CDHA")
+        );
+    }
 }

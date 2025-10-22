@@ -3,7 +3,6 @@ package com.thecode.WebSite_CHECK_XML;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.poi.hssf.record.PageBreakRecord.Break;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -40,11 +39,3 @@ public static void main(String[] args) {
 }
 
 }
-//     List<ErrorKCBGroup> results = Check_Error_KCB.ErrorKCB(hoSoList);
-// 	for (ErrorKCBGroup group : results) {
-//     System.out.println("📌 MaLK = " + group.getMaLk());
-//     for (ErrorKCBDetail detail : group.getErrors()) {
-//         System.out.println("   - " + detail.getErrorDetail()
-//                 + " (DV=" + detail.getMaDichVu() + ", BS chỉ định=" + detail.getMaBsCĐ() + ", BS thực hiện=" + detail.getMaBsTH() + ")" );
-//     }
-// }
