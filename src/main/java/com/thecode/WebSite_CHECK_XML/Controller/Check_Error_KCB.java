@@ -73,7 +73,14 @@ private static void checkBacSiChiDinhTrungGio(HoSoYTe hs, ErrorKCBGroup group) {
                 if (overlap) {
                     ErrorKCBDetail detail = new ErrorKCBDetail();
                     detail.setMaLk(hs.getMaLk());
+                    detail.setMaBn(hs.getMaBN());
+                    detail.setMaDichVu(other.getMaDichVu());
+                    detail.setTenDichVu(other.getTenDichVu());
+                     detail.setNgayYL(other.getNgayYl());
+                    detail.setNgayTHYL(other.getNgayThYl());
+                    detail.setNgaykq(other.getNgayKq());
                     detail.setMaBsCĐ(maBSChiDinh);
+                    detail.setMaBsTH(other.getNguoiThucHien());
                     detail.setErrorDetail("Bác sĩ chỉ định " + maBSChiDinh +
                             " có trùng giờ giữa dịch vụ \"" + dv.getTenDichVu() +
                             "\" và \"" + other.getTenDichVu() + "\"");
@@ -107,6 +114,9 @@ private static void checkBacSiChiDinhTrungGio(HoSoYTe hs, ErrorKCBGroup group) {
                 ErrorKCBDetail detail = new ErrorKCBDetail();
                 detail.setMaLk(hs.getMaLk());
                 detail.setMaBn(hs.getMaBN());
+                detail.setMaDichVu(thuoc.getMaThuoc());
+                detail.setMaBsCĐ(thuoc.getMaBacSi());
+                detail.setMaBsTH(thuoc.getMaBacSi());
                 detail.setTenDichVu(thuoc.getTenThuoc());
                 detail.setNgayYL(thuoc.getNgayYl());
 
@@ -191,7 +201,7 @@ private static void checkThoiGian(XML3 xml3, DichVuKyThuat allowed, String maLK,
                     ErrorKCBDetail detail = new ErrorKCBDetail();
                     detail.setMaLk(maLK);
                     detail.setMaDichVu(xml3.getMaDichVu());
-                
+                    //detail.setMaBn(xml3.getMaBN());
                     detail.setTenDichVu(xml3.getTenDichVu());
                     detail.setNgayYL(xml3.getNgayYl());
                     detail.setNgayTHYL(xml3.getNgayThYl());
@@ -233,6 +243,22 @@ public static List<ErrorKCBGroup> ErrorKCB(List<HoSoYTe> hsytList) {
                 .orElse(null);
         if (dvChinh == null) continue;
         if ("08.19".equals(norm(dvChinh.getMaDichVu()))) continue;
+
+        // 🔹 1.1 Kiểm tra bác sĩ chính phải trùng với người thực hiện
+        String bsChiDinh = norm(dvChinh.getMaBacSi());
+        String bsThucHien = norm(dvChinh.getNguoiThucHien());
+
+        if (bsChiDinh == null || bsThucHien == null || !bsChiDinh.equals(bsThucHien)) {
+            ErrorKCBDetail detail = new ErrorKCBDetail();
+            detail.setMaLk(hs.getMaLk());
+            detail.setMaBn(hs.getMaBN());
+            detail.setMaDichVu(dvChinh.getMaDichVu());
+            detail.setTenDichVu(dvChinh.getTenDichVu());
+            detail.setMaBsCĐ(bsChiDinh);
+            detail.setMaBsTH(bsThucHien);
+            detail.setErrorDetail("Bác sĩ chỉ định và thực hiện dịch vụ chính phải trùng nhau");
+            group.addError(detail);
+        }
 
         String bsChinh = norm(dvChinh.getMaBacSi());
 
