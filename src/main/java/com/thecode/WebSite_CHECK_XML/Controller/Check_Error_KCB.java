@@ -1,8 +1,11 @@
 package com.thecode.WebSite_CHECK_XML.Controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,55 +44,89 @@ public class Check_Error_KCB {
     }
 
 
+// =============================================
+// 🔍 PHÁT HIỆN BÁC SĨ CHỈ ĐỊNH / THỰC HIỆN TRÙNG GIỜ
+// =============================================
+private static final Map<String, Map<String, Set<String>>> GLOBAL_YL_MAP = new HashMap<>();
+private static final Map<String, Map<String, Set<String>>> GLOBAL_THYL_MAP = new HashMap<>();
+
 private static void checkBacSiChiDinhTrungGio(HoSoYTe hs, ErrorKCBGroup group) {
-    DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+    if (hs == null || hs.getDsCLS() == null || hs.getDsCLS().isEmpty()) return;
 
     List<XML3> dsCLS = hs.getDsCLS();
+    String maLK = norm(hs.getMaLk());
 
-    for (XML3 dv : dsCLS) {
-        if (dv.getMaBacSi() == null || dv.getNgayYl() == null || dv.getNgayKq() == null)
-            continue;
+    // 🔸 Bỏ qua bác sĩ đặc biệt
+    final String BS_BO_QUA = "008003/BD-CCHN";
 
-        try {
-            LocalDateTime start = LocalDateTime.parse(dv.getNgayYl(), fmt);
-            LocalDateTime end = LocalDateTime.parse(dv.getNgayKq(), fmt);
-            String maBSChiDinh = dv.getMaBacSi();
+    // 🔹 Ghi nhận giờ YL và THYL toàn cục
+    for (XML3 xml3 : dsCLS) {
+        if (xml3 == null) continue;
 
-            // Tìm các DV khác mà BS này đang thực hiện (không phải DV hiện tại)
-            for (XML3 other : dsCLS) {
-                if (other == dv) continue;
+        String bsCD = norm(xml3.getMaBacSi());
+        String gioYL = norm(xml3.getNgayYl());
+        String bsTH = norm(xml3.getNguoiThucHien());
+        String gioTHYL = norm(xml3.getNgayThYl());
 
-                boolean laCungBacSi = maBSChiDinh.equals(other.getNguoiThucHien())
-                        || maBSChiDinh.equals(other.getMaBacSi());
+        // Bỏ qua bác sĩ đặc biệt
+        if (BS_BO_QUA.equalsIgnoreCase(bsCD) || BS_BO_QUA.equalsIgnoreCase(bsTH)) continue;
 
-                if (!laCungBacSi) continue;
-                if (other.getNgayYl() == null || other.getNgayKq() == null) continue;
+        if (bsCD != null && gioYL != null && gioYL.matches("\\d{12}")) {
+            GLOBAL_YL_MAP
+                .computeIfAbsent(bsCD, k -> new HashMap<>())
+                .computeIfAbsent(gioYL, k -> new HashSet<>())
+                .add(maLK);
+        }
 
-                LocalDateTime oStart = LocalDateTime.parse(other.getNgayYl(), fmt);
-                LocalDateTime oEnd = LocalDateTime.parse(other.getNgayKq(), fmt);
+        if (bsTH != null && gioTHYL != null && gioTHYL.matches("\\d{12}")) {
+            GLOBAL_THYL_MAP
+                .computeIfAbsent(bsTH, k -> new HashMap<>())
+                .computeIfAbsent(gioTHYL, k -> new HashSet<>())
+                .add(maLK);
+        }
+    }
 
-                boolean overlap = !(end.isBefore(oStart) || oEnd.isBefore(start));
+    // 🔹 In báo cáo gọn gàng cho YL trùng
+    for (Map.Entry<String, Map<String, Set<String>>> entryBS : GLOBAL_YL_MAP.entrySet()) {
+        String bs = entryBS.getKey();
+        if (BS_BO_QUA.equalsIgnoreCase(bs)) continue;
 
-                if (overlap) {
-                    ErrorKCBDetail detail = new ErrorKCBDetail();
-                    detail.setMaLk(hs.getMaLk());
-                    detail.setMaBn(hs.getMaBN());
-                    detail.setMaDichVu(other.getMaDichVu());
-                    detail.setTenDichVu(other.getTenDichVu());
-                     detail.setNgayYL(other.getNgayYl());
-                    detail.setNgayTHYL(other.getNgayThYl());
-                    detail.setNgaykq(other.getNgayKq());
-                    detail.setMaBsCĐ(maBSChiDinh);
-                    detail.setMaBsTH(other.getNguoiThucHien());
-                    detail.setErrorDetail("Bác sĩ chỉ định " + maBSChiDinh +
-                            " có trùng giờ giữa dịch vụ \"" + dv.getTenDichVu() +
-                            "\" và \"" + other.getTenDichVu() + "\"");
-                    group.addError(detail);
-                }
+        Map<String, Set<String>> gioMap = entryBS.getValue();
+        boolean hasDup = gioMap.values().stream().anyMatch(set -> set.size() > 1);
+        if (!hasDup) continue;
+
+        System.out.println("\n[YL-TRUNG] BS chỉ định " + bs + " có hồ sơ trùng giờ:");
+        gioMap.forEach((gio, lkSet) -> {
+            if (lkSet.size() > 1) {
+                System.out.println("   - Giờ " + gio + ": " + String.join(", ", lkSet));
             }
-        } catch (Exception ignored) {}
+        });
+    }
+
+    // 🔹 In báo cáo gọn gàng cho THYL trùng
+    for (Map.Entry<String, Map<String, Set<String>>> entryBS : GLOBAL_THYL_MAP.entrySet()) {
+        String bs = entryBS.getKey();
+        if (BS_BO_QUA.equalsIgnoreCase(bs)) continue;
+
+        Map<String, Set<String>> gioMap = entryBS.getValue();
+        boolean hasDup = gioMap.values().stream().anyMatch(set -> set.size() > 1);
+        if (!hasDup) continue;
+
+        System.out.println("\n[THYL-TRUNG] BS thực hiện " + bs + " có hồ sơ trùng giờ:");
+        gioMap.forEach((gio, lkSet) -> {
+            if (lkSet.size() > 1) {
+                System.out.println("   - Giờ " + gio + ": " + String.join(", ", lkSet));
+            }
+        });
     }
 }
+
+
+
+
+
+
+
 
 
 
@@ -353,7 +390,7 @@ public static List<ErrorKCBGroup> ErrorKCB(List<HoSoYTe> hsytList) {
         // 🔹 7. Kiểm tra đồng bộ thời gian giữa các dịch vụ & thuốc
         checkThoiGianDongBo(hs.getDsCLS(), maLK, group);
         checkThuocSauKQ(hs, group);
-        //checkBacSiChiDinhTrungGio(hs, group); // có thể bật lại sau nếu cần
+        checkBacSiChiDinhTrungGio(hs, group); // có thể bật lại sau nếu cần
 
         // 🔹 8. Nếu hồ sơ có lỗi thì thêm vào danh sách kết quả
         if (!group.getErrors().isEmpty()) {
