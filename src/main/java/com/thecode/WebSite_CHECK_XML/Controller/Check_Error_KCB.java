@@ -360,6 +360,9 @@ public static List<ErrorKCBGroup> ErrorKCB(List<HoSoYTe> hsytList) {
                 group.addError(detail);
                 continue;
             }
+            
+            checkGioLamViec(performer, xml3, hs, "chỉ định", group);
+            checkGioLamViec(performer, xml3, hs, "thực hiện", group);
 
             // 🔹 5. Kiểm tra chuyên môn của bác sĩ với dịch vụ
             DichVuKyThuat allowed = performer.getDsDichVuDuocPhep().stream()
@@ -401,6 +404,33 @@ public static List<ErrorKCBGroup> ErrorKCB(List<HoSoYTe> hsytList) {
     return groupedErrors;
 }
 
+
+private static void checkGioLamViec(BacSi bs, XML3 xml3, HoSoYTe hs, String loai, ErrorKCBGroup group) {
+    if (bs == null || xml3 == null || hs == null) return;
+
+    String timeStr = loai.equalsIgnoreCase("chỉ định") ? xml3.getNgayYl() : xml3.getNgayThYl();
+    if (timeStr == null || !timeStr.matches("\\d{12}")) return;
+
+    try {
+        LocalDateTime thoiGian = LocalDateTime.parse(timeStr, DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        if (!bs.trongGioLam(thoiGian)) {
+            ErrorKCBDetail detail = new ErrorKCBDetail();
+            detail.setMaLk(hs.getMaLk());
+            detail.setMaBn(hs.getMaBN());
+            detail.setMaDichVu(xml3.getMaDichVu());
+            detail.setTenDichVu(xml3.getTenDichVu());
+            detail.setNgayYL(xml3.getNgayYl());
+            detail.setNgayTHYL(xml3.getNgayThYl());
+            detail.setNgaykq(xml3.getNgayKq());
+            detail.setMaBsCĐ(xml3.getMaBacSi());
+            detail.setMaBsTH(bs.getMaBS());
+            detail.setErrorDetail("⛔ Bác sĩ " + bs.getHoTenBS() + " nghỉ T7, không làm việc vào " + loai + ": " + timeStr);
+            group.addError(detail);
+        }
+    } catch (Exception e) {
+        // Bỏ qua lỗi parse, tránh dừng toàn bộ kiểm tra
+    }
+}
 
 
 
