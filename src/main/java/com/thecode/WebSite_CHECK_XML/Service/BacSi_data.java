@@ -24,7 +24,7 @@ public class BacSi_data {
         bsLe.setLichLamViec(getLichBsLe());
 
         BacSi bsTuanAnh = new BacSi("009359/QNA-CCHN", "Bs.Duy Đạt", "Ngoại", DichVuKyThuat_data.ddDat());
-        bsTuanAnh.setLichLamViec(getLichBsTuanAnh());
+        bsTuanAnh.setLichLamViec(getLichBsDDDat());
 
         BacSi bsHoai = new BacSi("001070/TB-CCHN", "Bs.Hoài", "SA", DichVuKyThuat_data.SieuAm());
         bsHoai.setLichLamViec(getLichBsHoai());
@@ -42,103 +42,150 @@ public class BacSi_data {
 
     private static Map<DayOfWeek, List<CaLamViec>> getLichBsThanh() {
         Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();
-        List<CaLamViec> caTuan = Arrays.asList(
-            new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30)),
-            new CaLamViec(LocalTime.of(13, 30), LocalTime.of(17, 0))
+
+        List<CaLamViec> caNgay = Arrays.asList(
+            new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30)),  // Ca sáng
+            new CaLamViec(LocalTime.of(13, 30), LocalTime.of(17, 0))  // Ca chiều
         );
-        for (DayOfWeek d : List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-                                   DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) {
-            lich.put(d, caTuan);
+
+        for (DayOfWeek day : List.of(
+                DayOfWeek.MONDAY,
+                DayOfWeek.TUESDAY,
+                DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY,
+                DayOfWeek.FRIDAY,
+                DayOfWeek.SATURDAY)) {
+            lich.put(day, caNgay);
         }
-        lich.put(DayOfWeek.SATURDAY, List.of(new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30))));
+
+        // Chủ nhật nghỉ
         lich.put(DayOfWeek.SUNDAY, Collections.emptyList());
+
         return lich;
     }
 
+
     private static Map<DayOfWeek, List<CaLamViec>> getLichBsNhatAnh() {
-    Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();
+        Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();
 
-    CaLamViec caSang = new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30));
-    CaLamViec caChieu = new CaLamViec(LocalTime.of(13, 30), LocalTime.of(17, 0));
+        CaLamViec caSang = new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30));
+        CaLamViec caChieu = new CaLamViec(LocalTime.of(13, 30), LocalTime.of(17, 0));
 
-    // T2–T6 + CN: làm cả ngày
-    for (DayOfWeek d : List.of(
-            DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-            DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SUNDAY)) {
-        lich.put(d, List.of(caSang, caChieu));
+        for (DayOfWeek d : List.of(
+                DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SUNDAY)) {
+            lich.put(d, List.of(caSang, caChieu));
+        }
+
+        // Thứ 7: nghỉ
+        lich.put(DayOfWeek.SATURDAY, Collections.emptyList());
+
+        return lich;
     }
-
-    // Thứ 7: nghỉ
-    lich.put(DayOfWeek.SATURDAY, Collections.emptyList());
-
-    return lich;
-}
 
     private static Map<DayOfWeek, List<CaLamViec>> getLichBsLe() {
         Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();
+
+       
         List<CaLamViec> caNgay = Arrays.asList(
             new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 0)),
-            new CaLamViec(LocalTime.of(13, 0), LocalTime.of(17, 0))
+            new CaLamViec(LocalTime.of(13, 30), LocalTime.of(17, 0))
         );
-        for (DayOfWeek d : List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-                                   DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY)) {
+
+        // Làm từ thứ 2 -> thứ 7
+        for (DayOfWeek d : List.of(
+                DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY)) {
             lich.put(d, caNgay);
         }
+
+        // Chủ nhật nghỉ
         lich.put(DayOfWeek.SUNDAY, Collections.emptyList());
+
         return lich;
     }
 
-    private static Map<DayOfWeek, List<CaLamViec>> getLichBsTuanAnh() {
+
+    private static Map<DayOfWeek, List<CaLamViec>> getLichBsDDDat() {
         Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();
-        List<CaLamViec> caNgay = Arrays.asList(
-            new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30)),
-            new CaLamViec(LocalTime.of(13, 30), LocalTime.of(17, 0))
-        );
-        for (DayOfWeek d : List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-                                   DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY)) {
-            lich.put(d, caNgay);
+
+        CaLamViec caSang = new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30));
+        CaLamViec caChieu = new CaLamViec(LocalTime.of(13, 30), LocalTime.of(17, 0));
+
+        // T2–T6: sáng + chiều
+        for (DayOfWeek d : List.of(
+                DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) {
+            lich.put(d, List.of(caSang, caChieu));
         }
-        lich.put(DayOfWeek.SUNDAY, Collections.emptyList());
+
+        // T7 & CN: chỉ làm buổi sáng
+        lich.put(DayOfWeek.SATURDAY, List.of(caSang));
+        lich.put(DayOfWeek.SUNDAY, List.of(caSang));
+
         return lich;
     }
+
 
     private static Map<DayOfWeek, List<CaLamViec>> getLichBsHoai() {
-        Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();
-        List<CaLamViec> caTuan = Arrays.asList(
-            new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30)),
-            new CaLamViec(LocalTime.of(13, 30), LocalTime.of(17, 0))
-        );
-        for (DayOfWeek d : List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-                                   DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) {
-            lich.put(d, caTuan);
+         Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();
+
+        // Ca sáng và chiều
+        CaLamViec caSang = new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30));
+        CaLamViec caChieu = new CaLamViec(LocalTime.of(13, 30), LocalTime.of(17, 0));
+
+        // Thứ 2 - Thứ 7: làm cả ngày
+        for (DayOfWeek d : List.of(
+                DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY)) {
+            lich.put(d, List.of(caSang, caChieu));
         }
-        lich.put(DayOfWeek.SATURDAY, List.of(new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30))));
-        lich.put(DayOfWeek.SUNDAY, List.of(new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30))));
+
+        // Chủ nhật: làm sáng
+        lich.put(DayOfWeek.SUNDAY, List.of(caSang));
+
         return lich;
     }
 
+
     private static Map<DayOfWeek, List<CaLamViec>> getLichKtvPhamPhuLam() {
-        Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();
-        List<CaLamViec> caTuan = Arrays.asList(
-            new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30)),
-            new CaLamViec(LocalTime.of(13, 30), LocalTime.of(17, 0))
-        );
-        for (DayOfWeek d : List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-                                   DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) {
-            lich.put(d, caTuan);
+       Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();
+
+        // Ca sáng và chiều
+        CaLamViec caSang = new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30));
+        CaLamViec caChieu = new CaLamViec(LocalTime.of(13, 30), LocalTime.of(17, 0));
+
+        // Thứ 2 - Thứ 7: làm cả ngày
+        for (DayOfWeek d : List.of(
+                DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY)) {
+            lich.put(d, List.of(caSang, caChieu));
         }
-        lich.put(DayOfWeek.SATURDAY, List.of(new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30))));
-        lich.put(DayOfWeek.SUNDAY, List.of(new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30))));
+
+        // Chủ nhật: làm sáng
+        lich.put(DayOfWeek.SUNDAY, List.of(caSang));
+
         return lich;
     }
 
     private static Map<DayOfWeek, List<CaLamViec>> getLichBsQuyen() {
         Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();
-        for (DayOfWeek d : List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-                                   DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY)) {
-            lich.put(d, List.of(new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30))));
+
+        // Ca sáng và chiều
+        CaLamViec caSang = new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30));
+        CaLamViec caChieu = new CaLamViec(LocalTime.of(13, 30), LocalTime.of(17, 0));
+
+        // Thứ 2 - Thứ 7: làm cả ngày
+        for (DayOfWeek d : List.of(
+                DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY)) {
+            lich.put(d, List.of(caSang, caChieu));
         }
-        lich.put(DayOfWeek.SUNDAY, Collections.emptyList());
+
+        // Chủ nhật: làm sáng
+        lich.put(DayOfWeek.SUNDAY, List.of(caSang));
+
         return lich;
     }
+
 }
