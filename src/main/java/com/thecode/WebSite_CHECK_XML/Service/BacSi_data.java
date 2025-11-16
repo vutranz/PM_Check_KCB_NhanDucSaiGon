@@ -71,17 +71,25 @@ public class BacSi_data {
         CaLamViec caSang = new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30));
         CaLamViec caChieu = new CaLamViec(LocalTime.of(13, 30), LocalTime.of(17, 0));
 
+        // Làm full sáng + chiều từ thứ 2 đến thứ 6
         for (DayOfWeek d : List.of(
-                DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-                DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SUNDAY)) {
+                DayOfWeek.MONDAY, 
+                DayOfWeek.TUESDAY, 
+                DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY, 
+                DayOfWeek.FRIDAY)) {
             lich.put(d, List.of(caSang, caChieu));
         }
+
+        // Chủ nhật: chỉ làm buổi sáng
+        lich.put(DayOfWeek.SUNDAY, List.of(caSang));
 
         // Thứ 7: nghỉ
         lich.put(DayOfWeek.SATURDAY, Collections.emptyList());
 
         return lich;
     }
+
 
     private static Map<DayOfWeek, List<CaLamViec>> getLichBsLe() {
         Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();
@@ -149,7 +157,7 @@ public class BacSi_data {
 
 
     private static Map<DayOfWeek, List<CaLamViec>> getLichKtvPhamPhuLam() {
-       Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();
+        Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();
 
         // Ca sáng và chiều
         CaLamViec caSang = new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30));
@@ -157,16 +165,21 @@ public class BacSi_data {
 
         // Thứ 2 - Thứ 7: làm cả ngày
         for (DayOfWeek d : List.of(
-                DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-                DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY)) {
+                DayOfWeek.MONDAY,
+                DayOfWeek.TUESDAY,
+                DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY,
+                DayOfWeek.FRIDAY,
+                DayOfWeek.SATURDAY)) {
             lich.put(d, List.of(caSang, caChieu));
         }
 
-        // Chủ nhật: làm sáng
-        lich.put(DayOfWeek.SUNDAY, List.of(caSang));
+        // Chủ nhật: nghỉ nguyên ngày
+        lich.put(DayOfWeek.SUNDAY, Collections.emptyList());
 
         return lich;
     }
+
 
     private static Map<DayOfWeek, List<CaLamViec>> getLichBsQuyen() {
         Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();

@@ -20,4 +20,3 @@ public class CaLamViec {
     public LocalTime getGioBatDau() { return gioBatDau; }
     public LocalTime getGioKetThuc() { return gioKetThuc; }
 }
-

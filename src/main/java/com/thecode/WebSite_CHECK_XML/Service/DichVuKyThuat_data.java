@@ -178,7 +178,7 @@ public class DichVuKyThuat_data {
 
     public static List<DichVuKyThuat> pvthanh(){
     return Arrays.asList(
-            new DichVuKyThuat("02.03", "Khám Nội tổng hợp", 2, 3, "CDHA"),
+            new DichVuKyThuat("02.03", "Khám Nội tổng hợp", 3, 4, "CDHA"),
             new DichVuKyThuat("02.0085.1778", "Điện tim thường", 4, 8, "CDHA"),
             new DichVuKyThuat("20.0080.0135", "Nội soi thực quản, dạ dày, tá tràng", 10, 15, "CDHA"),
            new DichVuKyThuat("18.0049.0004", "Siêu âm tim, màng tim qua thành ngực", 30, 45, "CDHA")
@@ -187,14 +187,14 @@ public class DichVuKyThuat_data {
 
     public static List<DichVuKyThuat> hnnanh(){
     return Arrays.asList(
-            new DichVuKyThuat("02.03", "Khám Nội tổng hợp", 2, 3, "CDHA"),
+            new DichVuKyThuat("02.03", "Khám Nội tổng hợp", 3, 5, "CDHA"),
             new DichVuKyThuat("20.0080.0135", "Nội soi thực quản, dạ dày, tá tràng", 10, 15, "CDHA")
         );
     }
 
     public static List<DichVuKyThuat> lnle(){
     return Arrays.asList(
-            new DichVuKyThuat("03.18", "Khám nhi", 2, 3, "CDHA")
+            new DichVuKyThuat("03.18", "Khám nhi", 3, 5, "CDHA")
         );
     }
 
