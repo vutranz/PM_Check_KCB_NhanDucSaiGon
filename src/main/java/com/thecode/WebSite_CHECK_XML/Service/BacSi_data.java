@@ -96,7 +96,7 @@ public class BacSi_data {
 
        
         List<CaLamViec> caNgay = Arrays.asList(
-            new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 0)),
+            new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30)),
             new CaLamViec(LocalTime.of(13, 30), LocalTime.of(17, 0))
         );
 

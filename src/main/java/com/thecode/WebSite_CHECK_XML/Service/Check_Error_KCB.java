@@ -439,7 +439,7 @@ private static void printGoiYXepGio() {
     }
 }
 
-private static void checkThoiGian(XML3 xml3, DichVuKyThuat allowed, String maLK, ErrorKCBGroup group) {
+/*private static void checkThoiGian(XML3 xml3, DichVuKyThuat allowed, String maLK, ErrorKCBGroup group) {
     DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
     try {
         String maDv = xml3.getMaDichVu();
@@ -505,6 +505,178 @@ private static void checkThoiGian(XML3 xml3, DichVuKyThuat allowed, String maLK,
     } catch (Exception e) {
         // Có thể log để theo dõi dữ liệu lỗi
         // System.err.println("Lỗi xử lý thời gian DV " + xml3.getMaDichVu() + ": " + e.getMessage());
+    }
+}*/
+
+
+
+/*private static void checkThoiGian(XML3 xml3, DichVuKyThuat allowed, String maLK, ErrorKCBGroup group) {
+    DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+    try {
+        String maDv = xml3.getMaDichVu();
+
+        boolean laCongKham =
+            "02.03".equals(maDv) ||
+            "03.18".equals(maDv) ||
+            "10.19".equals(maDv);
+
+        LocalDateTime startTime = null;
+        LocalDateTime endTime = null;
+
+        // 🔥 1. Công khám → dùng YL → KQ
+        if (laCongKham) {
+            if (xml3.getNgayYl() != null && xml3.getNgayKq() != null) {
+                startTime = LocalDateTime.parse(xml3.getNgayYl(), fmt);
+                endTime = LocalDateTime.parse(xml3.getNgayKq(), fmt);
+            }
+        }
+        // 🔥 2. DV kỹ thuật → dùng THYL → KQ
+        else {
+            if (xml3.getNgayThYl() != null && xml3.getNgayKq() != null) {
+                startTime = LocalDateTime.parse(xml3.getNgayThYl(), fmt);
+                endTime = LocalDateTime.parse(xml3.getNgayKq(), fmt);
+            }
+
+            // ❗ Chỉ DV kỹ thuật mới phải check YL < THYL
+            if (xml3.getNgayYl() != null && xml3.getNgayThYl() != null) {
+                LocalDateTime ngayYl = LocalDateTime.parse(xml3.getNgayYl(), fmt);
+                LocalDateTime ngayThyl = LocalDateTime.parse(xml3.getNgayThYl(), fmt);
+
+                if (!ngayYl.isBefore(ngayThyl)) {
+                    ErrorKCBDetail detail = new ErrorKCBDetail();
+                    detail.setMaLk(maLK);
+                    detail.setMaDichVu(maDv);
+                    detail.setTenDichVu(xml3.getTenDichVu());
+                    detail.setErrorDetail("Ngày yêu cầu (" + xml3.getNgayYl() + ") phải < ngày thực hiện (" + xml3.getNgayThYl() + ")");
+                    group.addError(detail);
+                }
+            }
+        }
+
+        // 🔥 3. Kiểm tra khoảng thời gian thực tế
+        if (startTime != null && endTime != null) {
+
+            long diffMinutes = Duration.between(startTime, endTime).toMinutes();
+
+            if (diffMinutes < allowed.getThoiGianToiThieu() ||
+                diffMinutes > allowed.getThoiGianToiDa()) {
+
+                ErrorKCBDetail detail = new ErrorKCBDetail();
+                detail.setMaLk(maLK);
+                detail.setMaDichVu(maDv);
+                detail.setTenDichVu(xml3.getTenDichVu());
+                detail.setErrorDetail(
+                    "Thời gian DV " + allowed.getTenDV() +
+                    " lệch " + diffMinutes + "p, chuẩn " +
+                    allowed.getThoiGianToiThieu() + "-" + allowed.getThoiGianToiDa()
+                );
+
+                group.addError(detail);
+            }
+        }
+
+    } catch (Exception e) {
+        // ignore
+    }
+}*/
+
+
+private static void checkThoiGian(
+        XML3 xml3,
+        DichVuKyThuat allowed,
+        String maLK,
+        ErrorKCBGroup group,
+        LocalDateTime congKhamEndTime   // 🔥 thêm KQ công khám
+) {
+    DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+
+    try {
+        String maDv = xml3.getMaDichVu();
+
+        boolean laCongKham =
+            "02.03".equals(maDv) ||
+            "03.18".equals(maDv) ||
+            "10.19".equals(maDv);
+
+        LocalDateTime startTime = null;
+        LocalDateTime endTime = null;
+
+        // 🔥 1. Công khám → YL → KQ
+        if (laCongKham) {
+            if (xml3.getNgayYl() != null && xml3.getNgayKq() != null) {
+                startTime = LocalDateTime.parse(xml3.getNgayYl(), fmt);
+                endTime   = LocalDateTime.parse(xml3.getNgayKq(), fmt);
+            }
+        }
+        // 🔥 2. DVKT → THYL → KQ
+        else {
+            if (xml3.getNgayThYl() != null && xml3.getNgayKq() != null) {
+                startTime = LocalDateTime.parse(xml3.getNgayThYl(), fmt);
+                endTime   = LocalDateTime.parse(xml3.getNgayKq(), fmt);
+            }
+
+            // 🔥 Rule cũ: YL < THYL
+            if (xml3.getNgayYl() != null && xml3.getNgayThYl() != null) {
+                LocalDateTime yl   = LocalDateTime.parse(xml3.getNgayYl(), fmt);
+                LocalDateTime thyl = LocalDateTime.parse(xml3.getNgayThYl(), fmt);
+
+                if (!yl.isBefore(thyl)) {
+                    ErrorKCBDetail detail = new ErrorKCBDetail();
+                    detail.setMaLk(maLK);
+                    detail.setMaDichVu(maDv);
+                    detail.setTenDichVu(xml3.getTenDichVu());
+                    detail.setErrorDetail(
+                        "Ngày YL (" + xml3.getNgayYl() + 
+                        ") phải < ngày thực hiện (" + xml3.getNgayThYl() + ")"
+                    );
+                    group.addError(detail);
+                }
+            }
+
+            // 🔥🔥🔥 RULE MỚI: YL_CLS > KQ Công khám
+            if (congKhamEndTime != null && xml3.getNgayYl() != null) {
+                LocalDateTime ylCls = LocalDateTime.parse(xml3.getNgayYl(), fmt);
+
+                if (!ylCls.isAfter(congKhamEndTime)) {
+                    ErrorKCBDetail detail = new ErrorKCBDetail();
+                    detail.setMaLk(maLK);
+                    detail.setMaDichVu(maDv);
+                    detail.setTenDichVu(xml3.getTenDichVu());
+                    detail.setErrorDetail(
+                        "Ngày YL (" + xml3.getNgayYl() + 
+                        ") của DV " + xml3.getTenDichVu() +
+                        " phải > thời gian kết thúc công khám (" +
+                        congKhamEndTime.format(fmt) + ")"
+                    );
+                    group.addError(detail);
+                }
+            }
+        }
+
+        // 🔥 3. Kiểm tra thời lượng DVKT
+        if (startTime != null && endTime != null) {
+
+            long diffMinutes = Duration.between(startTime, endTime).toMinutes();
+
+            if (diffMinutes < allowed.getThoiGianToiThieu() ||
+                diffMinutes > allowed.getThoiGianToiDa()) {
+
+                ErrorKCBDetail detail = new ErrorKCBDetail();
+                detail.setMaLk(maLK);
+                detail.setMaDichVu(maDv);
+                detail.setTenDichVu(xml3.getTenDichVu());
+                detail.setErrorDetail(
+                    "Thời gian DV " + allowed.getTenDV() +
+                    " lệch " + diffMinutes + "p, chuẩn " +
+                    allowed.getThoiGianToiThieu() + "-" + allowed.getThoiGianToiDa()
+                );
+
+                group.addError(detail);
+            }
+        }
+
+    } catch (Exception e) {
+        // ignore nhưng KHÔNG NÊN, nên log ra
     }
 }
 
@@ -676,9 +848,20 @@ public static List<ErrorKCBGroup> ErrorKCB(List<HoSoYTe> hsytList) {
                 group.addError(detail);
                 continue;
             }
+            
+            LocalDateTime kqCongKham = null;
+            try {
+                if (dvChinh.getNgayKq() != null) {
+                    DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+                    kqCongKham = LocalDateTime.parse(dvChinh.getNgayKq(), fmt);
+                }
+            } catch (Exception e) {
+                // ignore
+            }
 
             // 🔹 6. Kiểm tra thời gian hợp lệ của từng dịch vụ
-            checkThoiGian(xml3, allowed, maLK, group);
+            checkThoiGian(xml3, allowed, maLK, group,kqCongKham);
+
         }
 
         // 🔹 7. Kiểm tra đồng bộ thời gian giữa các dịch vụ & thuốc
