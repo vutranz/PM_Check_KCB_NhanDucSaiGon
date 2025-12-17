@@ -48,7 +48,7 @@ public class DichVuKyThuat_data {
             new DichVuKyThuat("18.0001.0001", "Siêu âm tuyến giáp", 6, 15, "CDHA"),
             new DichVuKyThuat("18.0002.0001", "Siêu âm các tuyến nước bọt", 6, 15, "CDHA"),
             new DichVuKyThuat("18.0003.0001", "Siêu âm cơ phần mềm vùng cổ mặt", 6, 15, "CDHA"),
-            new DichVuKyThuat("18.0004.0001", "Siêu âm hạch vùng cổ", 15, 30, "CDHA"),
+            new DichVuKyThuat("18.0004.0001", "Siêu âm hạch vùng cổ", 6, 15, "CDHA"),
             new DichVuKyThuat("18.0012.0001", "Siêu âm thành ngực (cơ, phần mềm thành ngực)", 6, 15, "CDHA"),
             new DichVuKyThuat("18.0015.0001", "Siêu âm ổ bụng (gan mật, tụy, lách, thận, bàng quang)", 6, 15, "CDHA"),
             new DichVuKyThuat("18.0018.0001", "Siêu âm tử cung phần phụ", 6, 15, "CDHA"),
@@ -180,7 +180,7 @@ public class DichVuKyThuat_data {
     return Arrays.asList(
             new DichVuKyThuat("02.03", "Khám Nội tổng hợp", 2, 3, "CDHA"),
             new DichVuKyThuat("02.0085.1778", "Điện tim thường", 4, 8, "CDHA"),
-            new DichVuKyThuat("20.0080.0135", "Nội soi thực quản, dạ dày, tá tràng", 10, 15, "CDHA"),
+            new DichVuKyThuat("20.0080.0135", "Nội soi thực quản, dạ dày, tá tràng", 30, 31, "CDHA"),
            new DichVuKyThuat("18.0049.0004", "Siêu âm tim, màng tim qua thành ngực", 30, 45, "CDHA")
         );
     }
@@ -188,7 +188,7 @@ public class DichVuKyThuat_data {
     public static List<DichVuKyThuat> hnnanh(){
     return Arrays.asList(
             new DichVuKyThuat("02.03", "Khám Nội tổng hợp", 2, 3, "CDHA"),
-            new DichVuKyThuat("20.0080.0135", "Nội soi thực quản, dạ dày, tá tràng", 10, 15, "CDHA")
+            new DichVuKyThuat("20.0080.0135", "Nội soi thực quản, dạ dày, tá tràng", 30, 31, "CDHA")
         );
     }
 

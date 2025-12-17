@@ -35,7 +35,10 @@ public class BacSi_data {
         BacSi bsQuyen = new BacSi("008003/BD-CCHN", "Quyền", "XN", DichVuKyThuat_data.getDsXetNghiem());
         bsQuyen.setLichLamViec(getLichBsQuyen());
 
-        return Arrays.asList(bsThanh, bsNhatAnh, bsLe, bsTuanAnh, bsHoai, bsQuyen,ktvPhamPhuLam);
+         BacSi KTVXetNghiemThao = new BacSi("4029/BTH-CCHN", "Thảo", "XN", DichVuKyThuat_data.getDsXetNghiem());
+        KTVXetNghiemThao.setLichLamViec(getLichBsThao());
+
+        return Arrays.asList(bsThanh, bsNhatAnh, bsLe, bsTuanAnh, bsHoai, bsQuyen,ktvPhamPhuLam,KTVXetNghiemThao);
     }
 
     // ---------- Lịch cụ thể cho từng bác sĩ ----------
@@ -182,6 +185,26 @@ public class BacSi_data {
 
 
     private static Map<DayOfWeek, List<CaLamViec>> getLichBsQuyen() {
+        Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();
+
+        // Ca sáng và chiều
+        CaLamViec caSang = new CaLamViec(LocalTime.of(7, 0), LocalTime.of(11, 30));
+        CaLamViec caChieu = new CaLamViec(LocalTime.of(13, 30), LocalTime.of(17, 0));
+
+        // Thứ 2 - Thứ 7: làm cả ngày
+        for (DayOfWeek d : List.of(
+                DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY)) {
+            lich.put(d, List.of(caSang, caChieu));
+        }
+
+        // Chủ nhật: làm sáng
+        lich.put(DayOfWeek.SUNDAY, List.of(caSang));
+
+        return lich;
+    }
+
+     private static Map<DayOfWeek, List<CaLamViec>> getLichBsThao() {
         Map<DayOfWeek, List<CaLamViec>> lich = new HashMap<>();
 
         // Ca sáng và chiều
