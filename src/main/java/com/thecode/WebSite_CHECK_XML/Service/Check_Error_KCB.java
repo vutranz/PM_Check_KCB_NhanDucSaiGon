@@ -1,7 +1,9 @@
 package com.thecode.WebSite_CHECK_XML.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,6 +19,7 @@ import com.thecode.WebSite_CHECK_XML.Model.application.XML3;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.Duration;
+import java.time.LocalDate;
 
 public class Check_Error_KCB {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -50,6 +53,7 @@ public class Check_Error_KCB {
 
     if (maxKQ.isEmpty()) return; // không có KQ thì bỏ qua
 
+    
     for (XML2 thuoc : hs.getDsThuoc()) {
         try {
             if (thuoc.getNgayYl() == null) continue;
@@ -87,6 +91,12 @@ public class Check_Error_KCB {
    public static void checkThoiGianDongBo(List<XML3> dsCLS, String maLK, ErrorKCBGroup group) {
     if (dsCLS == null || dsCLS.isEmpty()) return;
 
+    // ❌ Nếu có 08.16 (điều trị ngoại trú nhiều ngày) → bỏ qua toàn bộ kiểm tra
+    boolean hasDieuTriNgoaiTru = dsCLS.stream()
+            .anyMatch(x -> "08.16".equals(norm(x.getMaDichVu())));
+
+    if (hasDieuTriNgoaiTru) return;
+    
     Set<String> skipSet = Set.of("02.03", "03.18", "10.19");
 
     List<XML3> validCLS = dsCLS.stream()
@@ -96,7 +106,7 @@ public class Check_Error_KCB {
     if (validCLS.isEmpty()) return;
 
     String firstNgayYL = validCLS.get(0).getNgayYl();
-    String firstThYl = validCLS.get(0).getNgayThYl();
+    //String firstThYl = validCLS.get(0).getNgayThYl();
 
     for (XML3 xml3 : validCLS) {
         // check NgayYL
@@ -113,21 +123,6 @@ public class Check_Error_KCB {
             detail.setErrorDetail("Thời gian YL không đồng bộ trong hồ sơ");
             group.addError(detail);
         }
-
-        // check NgayTHYL
-        // if (xml3.getNgayThYl() != null && !xml3.getNgayThYl().equals(firstThYl)) {
-        //     ErrorKCBDetail detail = new ErrorKCBDetail();
-        //     detail.setMaLk(maLK);
-        //     detail.setMaDichVu(xml3.getMaDichVu());
-        //     detail.setTenDichVu(xml3.getTenDichVu());
-        //     detail.setMaBsCĐ(xml3.getMaBacSi());
-        //     detail.setMaBsTH(xml3.getNguoiThucHien());
-        //     detail.setNgayYL(xml3.getNgayYl());
-        //     detail.setNgayTHYL(xml3.getNgayThYl());
-        //     detail.setNgaykq(xml3.getNgayKq());
-        //     detail.setErrorDetail("Thời gian THYL không đồng bộ trong hồ sơ");
-        //     group.addError(detail);
-        // }
     }
 }
 
@@ -148,7 +143,8 @@ private static void checkThoiGian(
         boolean laCongKham =
             "02.03".equals(maDv) ||
             "03.18".equals(maDv) ||
-            "10.19".equals(maDv);
+            "10.19".equals(maDv)||
+            "08.16".equals(maDv);;
 
         LocalDateTime startTime = null;
         LocalDateTime endTime = null;
@@ -176,6 +172,8 @@ private static void checkThoiGian(
                     ErrorKCBDetail detail = new ErrorKCBDetail();
                     detail.setMaLk(maLK);
                     detail.setMaDichVu(maDv);
+                    detail.setNgayTHYL(xml3.getNgayThYl());
+                    detail.setNgaykq(xml3.getNgayKq());
                     detail.setTenDichVu(xml3.getTenDichVu());
                     detail.setErrorDetail(
                         "Ngày YL (" + xml3.getNgayYl() + 
@@ -216,6 +214,11 @@ private static void checkThoiGian(
                 ErrorKCBDetail detail = new ErrorKCBDetail();
                 detail.setMaLk(maLK);
                 detail.setMaDichVu(maDv);
+                detail.setMaBsTH(xml3.getNguoiThucHien());
+                detail.setMaBsCĐ(xml3.getMaBacSi());
+                detail.setNgayTHYL(xml3.getNgayThYl());
+                detail.setNgayYL(xml3.getNgayYl());
+                detail.setNgaykq(xml3.getNgayKq());
                 detail.setTenDichVu(xml3.getTenDichVu());
                 detail.setErrorDetail(
                     "Thời gian DV " + allowed.getTenDV() +
@@ -281,9 +284,10 @@ private static void checkThoiGian(
 
 public static List<ErrorKCBGroup> ErrorKCB(List<HoSoYTe> hsytList) {
     List<ErrorKCBGroup> groupedErrors = new ArrayList<>();
-    Set<String> khoaChinhSet = Set.of("02.03", "03.18", "10.19"); 
+    Set<String> khoaChinhSet = Set.of("02.03", "03.18", "10.19","08.16"); 
     List<BacSi> dsBacSi = BacSi_data.getDsBacSi();
-
+    Map<String, Map<LocalDate, Integer>> soCaTheoBacSi = new HashMap<>();
+    DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
     for (HoSoYTe hs : hsytList) {
         String maLK = hs.getMaLk();
         ErrorKCBGroup group = new ErrorKCBGroup(maLK);
@@ -294,7 +298,22 @@ public static List<ErrorKCBGroup> ErrorKCB(List<HoSoYTe> hsytList) {
                 .findFirst()
                 .orElse(null);
         if (dvChinh == null) continue;
-        if ("08.19".equals(norm(dvChinh.getMaDichVu()))) continue;
+
+        // 🔹 Đếm số ca khám theo bác sĩ / ngày
+        try {
+            String cchn = norm(dvChinh.getMaBacSi());
+
+            if (dvChinh.getNgayKq() != null && cchn != null) {
+                LocalDate ngay = LocalDateTime.parse(dvChinh.getNgayKq(), fmt).toLocalDate();
+
+                soCaTheoBacSi
+                    .computeIfAbsent(cchn, k -> new HashMap<>())
+                    .merge(ngay, 1, Integer::sum);
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+        //if ("08.16".equals(norm(dvChinh.getMaDichVu()))) continue;
 
         // 🔹 1.1 Kiểm tra bác sĩ chính phải trùng với người thực hiện
         String bsChiDinh = norm(dvChinh.getMaBacSi());
@@ -404,11 +423,9 @@ public static List<ErrorKCBGroup> ErrorKCB(List<HoSoYTe> hsytList) {
             LocalDateTime kqCongKham = null;
             try {
                 if (dvChinh.getNgayKq() != null) {
-                    DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
                     kqCongKham = LocalDateTime.parse(dvChinh.getNgayKq(), fmt);
                 }
             } catch (Exception e) {
-                // ignore
             }
 
             // 🔹 6. Kiểm tra thời gian hợp lệ của từng dịch vụ
@@ -418,6 +435,10 @@ public static List<ErrorKCBGroup> ErrorKCB(List<HoSoYTe> hsytList) {
 
         // 🔹 7. Kiểm tra đồng bộ thời gian giữa các dịch vụ & thuốc
         checkThoiGianDongBo(hs.getDsCLS(), maLK, group);
+
+//         if (!"08.16".equals(norm(dvChinh.getMaDichVu()))) {
+//         checkThuocSauKQ(hs, group);
+// }
         checkThuocSauKQ(hs, group);
 
         // 🔹 8. Nếu hồ sơ có lỗi thì thêm vào danh sách kết quả
@@ -425,6 +446,36 @@ public static List<ErrorKCBGroup> ErrorKCB(List<HoSoYTe> hsytList) {
             groupedErrors.add(group);
         }
     }
+        for (Map.Entry<String, Map<LocalDate, Integer>> bsEntry : soCaTheoBacSi.entrySet()) {
+
+    String cchn = bsEntry.getKey();
+
+    for (Map.Entry<LocalDate, Integer> ngayEntry : bsEntry.getValue().entrySet()) {
+
+        int soCa = ngayEntry.getValue();
+
+        // 🔹 In ra để kiểm tra
+        System.out.println("CCHN: " + cchn +
+                           " | Ngày: " + ngayEntry.getKey() +
+                           " | Số ca: " + soCa);
+
+        if (soCa > 65) {
+
+            ErrorKCBGroup group = new ErrorKCBGroup("SYSTEM");
+
+            ErrorKCBDetail detail = new ErrorKCBDetail();
+            detail.setMaBsCĐ(cchn);
+            detail.setErrorDetail(
+                "Bác sĩ có CCHN " + cchn +
+                " khám " + soCa +
+                " ca trong ngày " + ngayEntry.getKey()
+            );
+
+            group.addError(detail);
+            groupedErrors.add(group);
+        }
+    }
+}
 
     return groupedErrors;
 }

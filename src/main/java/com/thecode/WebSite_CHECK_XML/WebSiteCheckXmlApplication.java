@@ -29,6 +29,7 @@ public static void main(String[] args) {
     List<XML2> xml2 = ExcelReader_XML2.readXML2("data_KCB_XML/4750_xml2.xls");
     List<XML3> xml3 = ExcelReader_XML3.readXML3("data_KCB_XML/4750_xml3.xls");
     List<HoSoYTe> hoSoList = ExcelReader_HoSoYTe.merge(xml1, xml2, xml3);
+    
 	List<ErrorKCBGroup> results = Check_Error_KCB.ErrorKCB(hoSoList);
 	List<ErrorKCBDetail> errors = results.stream()
 		.flatMap(group -> group.getErrors().stream())

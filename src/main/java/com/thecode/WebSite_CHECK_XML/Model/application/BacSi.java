@@ -2,7 +2,6 @@ package com.thecode.WebSite_CHECK_XML.Model.application;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
